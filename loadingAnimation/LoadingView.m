@@ -104,11 +104,13 @@
         UIColor *textTintColor;
         if (!self.textTintColor) {
             
-            textTintColor = [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:1]; //默认白色
+            textTintColor = [UIColor whiteColor]; //默认白色
         } else {
             textTintColor = self.textTintColor;
         }
         self.labelArray = [NSMutableArray arrayWithCapacity:10];
+        
+        //记录字符串的总长度，用以设定下一个 Label 的位置
         CGFloat totalWidth = 0.0;
         
         for (int i = 0; i < 10; i ++) {
@@ -123,10 +125,6 @@
             label.text = textArray[i];
             label.font = [UIFont systemFontOfSize:14.0];
             label.textAlignment = NSTextAlignmentCenter;
-            if (i == 3) {
-                label.textAlignment = NSTextAlignmentLeft;
-                
-            }
             label.textColor = textTintColor;
             label.layer.opacity = 0.0f;
             
@@ -162,11 +160,11 @@
         self.alpha = 1.0f;
     }];
     
-    [self.imageView.layer addAnimation:[self imageAnimation:self.imageView] forKey:@"imageMove"];
+    [self.imageView.layer addAnimation:[self imageMoveAnimationForImageView:self.imageView] forKey:@"imageMove"];
     
     for (int i = 0; i < 10; i ++) {
         UILabel *label = self.labelArray[i];
-        CAAnimationGroup *group = [self labelAnimation:label delay:i * 0.16];
+        CAAnimationGroup *group = [self labelAppearAnimationForLabel:label delay:i * 0.16];
         [group setValue:[NSString stringWithFormat:@"%d",i] forKey:@"name"];
         
         [label.layer addAnimation:group forKey:@"labelAppear"];
@@ -211,85 +209,71 @@
  *
  *  @return CAAnimationGroup
  */
-- (CAAnimationGroup *)imageAnimation:(UIImageView *)imageView{
-    
+- (CAAnimationGroup *)imageMoveAnimationForImageView:(UIImageView *)imageView{
     
     //1. 向下移动
     //imageView.layer.position = (34.0, 12.0)
     CABasicAnimation *moveDownAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
     moveDownAnimation.fromValue = [NSValue valueWithCGPoint:imageView.layer.position];
     moveDownAnimation.toValue = [NSValue valueWithCGPoint:CGPointMake(imageView.layer.position.x, 43)];
-    moveDownAnimation.fillMode = kCAFillModeForwards;
     moveDownAnimation.duration = 0.4f;
     moveDownAnimation.beginTime = 0.0f;
-    moveDownAnimation.removedOnCompletion = NO;
     moveDownAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
     
     //2.1 向上移动
     CABasicAnimation *moveUpAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
     moveUpAnimation.fromValue = [NSValue valueWithCGPoint:CGPointMake(34.0, 45.0)];
     moveUpAnimation.toValue = [NSValue valueWithCGPoint:imageView.layer.position];
-    moveUpAnimation.autoreverses = NO;
-    moveUpAnimation.fillMode = kCAFillModeForwards;
-    //    moveAnimation.repeatCount = MAXFLOAT;
     moveUpAnimation.duration = 0.4f;
     moveUpAnimation.beginTime = 0.4f;
-    moveUpAnimation.removedOnCompletion = NO;
     moveUpAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
     
     //2.2 旋转到180
     CABasicAnimation *rotateAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     rotateAnimation.fromValue = [NSNumber numberWithFloat:0];
     rotateAnimation.toValue = [NSNumber numberWithFloat: M_PI];
-    rotateAnimation.autoreverses = NO;
     rotateAnimation.fillMode = kCAFillModeForwards;
-    //    rotateAnimation.repeatCount = MAXFLOAT;
+    rotateAnimation.removedOnCompletion = NO;
     rotateAnimation.duration = 0.4;
     rotateAnimation.beginTime = 0.4f;
-    rotateAnimation.removedOnCompletion = NO;
     rotateAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
     
     //3. 向下移动
     CABasicAnimation *moveDownAnimation_2 = [CABasicAnimation animationWithKeyPath:@"position"];
     moveDownAnimation_2.fromValue = [NSValue valueWithCGPoint:imageView.layer.position];
     moveDownAnimation_2.toValue = [NSValue valueWithCGPoint:CGPointMake(imageView.layer.position.x, 43)];
-    moveDownAnimation_2.fillMode = kCAFillModeForwards;
     moveDownAnimation_2.duration = 0.4f;
     moveDownAnimation_2.beginTime = 0.8f;
-    moveDownAnimation_2.removedOnCompletion = NO;
     moveDownAnimation_2.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
     
     //4.1. 向上移动
     CABasicAnimation *moveUpAnimation_2 = [CABasicAnimation animationWithKeyPath:@"position"];
     moveUpAnimation_2.fromValue = [NSValue valueWithCGPoint:CGPointMake(34.0, 45.0)];
     moveUpAnimation_2.toValue = [NSValue valueWithCGPoint:imageView.layer.position];
-    moveUpAnimation_2.autoreverses = NO;
-    moveUpAnimation_2.fillMode = kCAFillModeForwards;
     moveUpAnimation_2.duration = 0.4f;
     moveUpAnimation_2.beginTime = 1.2f;
-    moveUpAnimation_2.removedOnCompletion = NO;
     moveUpAnimation_2.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
     
     //4.2 180 旋转到 360
     CABasicAnimation *rotateAnimation_2 = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     rotateAnimation_2.fromValue = [NSNumber numberWithFloat:M_PI];
     rotateAnimation_2.toValue = [NSNumber numberWithFloat: 2 * M_PI];
-    rotateAnimation_2.autoreverses = NO;
-    rotateAnimation_2.fillMode = kCAFillModeForwards;
     rotateAnimation_2.duration = 0.4;
     rotateAnimation_2.beginTime = 1.2f;
+    rotateAnimation_2.fillMode = kCAFillModeForwards;
     rotateAnimation_2.removedOnCompletion = NO;
+
     rotateAnimation_2.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
     
     CAAnimationGroup *group = [CAAnimationGroup animation];
     group.animations = @[moveDownAnimation, moveUpAnimation, rotateAnimation, moveDownAnimation_2, moveUpAnimation_2, rotateAnimation_2];
-    group.duration = 1.6;
+    group.duration = 1.6 + 0.05;
     group.repeatCount = MAXFLOAT;
-    group.removedOnCompletion = NO;
-//    group.autoreverses = NO;
+    group.autoreverses = NO;
     group.fillMode = kCAFillModeForwards;
+    group.removedOnCompletion = NO;
     group.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-    group.delegate = self;
+//    group.delegate = self;
     
     [group setValue:@"imageAnimation" forKey:@"name"];
     
@@ -304,7 +288,7 @@
  *
  *  @return CAAnimationGroup
  */
-- (CAAnimationGroup *)labelAnimation:(UILabel *)label delay:(CGFloat)delay{
+- (CAAnimationGroup *)labelAppearAnimationForLabel:(UILabel *)label delay:(CGFloat)delay{
     
     //1. 透明度渐变
     CABasicAnimation *opacityAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -330,17 +314,15 @@
     
     CAAnimationGroup *group = [CAAnimationGroup animation];
     group.animations = @[opacityAnimation, moveDownAnimation];
-    group.duration = 1.65f;
+    group.duration = 1.6 + 0.05;
     group.repeatCount = MAXFLOAT;
     group.removedOnCompletion = NO;
     group.autoreverses = NO;
     group.fillMode = kCAFillModeForwards;
-    group.delegate = self;
+//    group.delegate = self;
     
     return group;
-    
-    
-}
+ }
 
 
 #pragma mark - animation delegate
